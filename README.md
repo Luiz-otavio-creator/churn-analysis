@@ -1,4 +1,4 @@
-Customer Churn Analysis
+# Customer Churn Analysis
 
 Goal: This project investigates customer churn in an e-commerce dataset, applying exploratory data analysis (EDA), outlier/anomaly detection, feature engineering, and predictive modeling to identify which factors drive churn and to build a reproducible pipeline for churn risk scoring.
 -----------------------
