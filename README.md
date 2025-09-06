@@ -1,3 +1,205 @@
+Customer Churn Analysis
+
+Goal: This project investigates customer churn in an e-commerce dataset, applying exploratory data analysis (EDA), outlier/anomaly detection, feature engineering, and predictive modeling to identify which factors drive churn and to build a reproducible pipeline for churn risk scoring.
+-----------------------
+Motivation
+
+Customer churn directly impacts business sustainability: acquiring a new customer can cost 5–7x more than retaining an existing one.
+By understanding the drivers of churn, companies can take proactive actions — targeted offers, loyalty programs, or personalized engagement — to reduce churn and increase lifetime value.
+------------------------
+Dataset
+
+File: data/raw/E_Commerce_Dataset.xlsx (sheet: "E Comm")
+
+Records: 5,630 customers
+
+Target: Churn (1 = churned, 0 = retained)
+
+Examples of features:
+
+Numeric: Tenure, HourSpendOnApp, OrderCount, CashbackAmount, SatisfactionScore, DaySinceLastOrder, CouponUsed, OrderAmountHikeFromlastYear
+
+Categorical: Gender, MaritalStatus, PreferredPaymentMode, PreferredLoginDevice, CityTier, PreferedOrderCat, Complain
+----------------------
+Exploratory Data Analysis (EDA)
+
+Target distribution: ~16% churn rate → dataset is moderately imbalanced.
+
+Numeric features:
+
+Strong skew in OrderCount and CouponUsed (few customers with very high values).
+
+CashbackAmount shows clusters around promotion thresholds.
+
+Categorical features:
+
+Payment method and preferred order category show clear churn differences.
+
+Customers who complained are more likely to churn.
+
+Outliers:
+
+Univariate IQR flagged outliers in most numeric variables.
+
+Multivariate IsolationForest (~1% contamination) highlighted unusual profiles.
+
+EDA notebooks and interactive Plotly visualizations are available in notebooks/01_eda.ipynb.
+------------------------------------------
+Feature Engineering
+
+Created domain-inspired features to enrich the dataset:
+
+orders_per_month = OrderCount / (Tenure + 1)
+
+engagement_rate = HourSpendOnApp / (Tenure + 1)
+
+coupon_rate = CouponUsed / (OrderCount + 1)
+
+cashback_per_order = CashbackAmount / (OrderCount + 1)
+
+high_growth_flag = 1{OrderAmountHikeFromlastYear ≥ 18}
+
+Bands:
+
+Recency: 0–2, 3–7, 8–14, 15+ days
+
+Tenure: 0–3, 4–12, 13–24, 25+ months
+
+All preprocessing is packaged in a scikit-learn Pipeline:
+
+Numeric → Median imputation + RobustScaler
+
+Categorical → Constant imputation + OneHotEncoder
+
+Saved as artifacts/feature_pipeline.joblib for reproducibility.
+
+Implemented in notebooks/02_feature_engineering.ipynb.
+--------------------------------------------------------
+Modeling & Results
+
+Baseline: Logistic Regression
+
+Tree-based models: Random Forest, XGBoost, LightGBM
+
+Validation: Stratified train/test split, with ROC-AUC and PR-AUC as main metrics
+---------------------------------------------------------
+Performance (example results)
+Model	ROC-AUC	PR-AUC	F1 Score
+Logistic Regression	0.78	0.41	0.52
+Random Forest	0.85	0.52	0.61
+LightGBM	0.87	0.55	0.64
+
+LightGBM performed best, balancing interpretability and predictive power.
+
+Feature importance & SHAP analysis revealed key churn drivers:
+
+Low Tenure (newer customers churn more)
+
+High Recency (long time since last order)
+
+Complaints filed
+
+Low SatisfactionScore
+
+See detailed evaluation in notebooks/03_modeling.ipynb and 04_model_evaluation.ipynb.
+------------------------------------------------
+Interpretability & Insights
+
+SHAP values confirm that recency, complaints, and satisfaction dominate churn risk.
+
+Customers with frequent coupon usage and short tenure show mixed risk — some are price-sensitive, others highly engaged.
+
+Actionable strategies:
+
+Early engagement campaigns for new customers
+
+Fast complaint resolution workflows
+
+Reward programs targeting high-recency but previously loyal users
+
+Insights documented in notebooks/05_interpretability.ipynb.
+-------------------------------------------------------
+Project Structure
+data/
+  raw/          # original Excel (not versioned)
+  processed/    # feature matrices
+notebooks/      # step-by-step workflow
+src/            # reusable Python modules
+plots/          # interactive HTML charts (local only)
+artifacts/      # saved pipelines & models
+---------------------------------
+Setup & Reproducibility
+Conda
+conda env create -f environment.yml
+conda activate churn_env
+jupyter lab
+
+Requirements (pip alternative)
+pip install -r requirements.txt
+---------------------------------------
+Key Takeaways
+
+Churn rate ≈ 16%: manageable imbalance.
+
+Clear drivers: tenure, recency, complaints, satisfaction.
+
+Tree-based models significantly outperform logistic regression.
+
+SHAP provides transparency: actionable insights for retention strategies.
+
+Pipeline ensures full reproducibility: same preprocessing for train & inference.
+------------------------------------
+Next Steps
+
+Add time-based validation (simulate deployment).
+
+Test uplift modeling for personalized retention campaigns.
+
+Deploy pipeline as an API (FastAPI / Flask) for real-time scoring.
+
+Automate retraining with fresh data.
+-----------------------
+📜 License
+
+MIT License – see LICENSE
+.
+
+🔗 Author: Luiz Otávio Marangão
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------------------
 # Churn Analysis
 
 This project analyzes customer churn to identify patterns and predict customer attrition.
